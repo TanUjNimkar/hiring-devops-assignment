@@ -49,13 +49,13 @@ This project deploys a distributed worker-based inference architecture on AWS us
 
 ### EC2 Instances — All Running
 
-![EC2 Instances](assets/ec2-instances.png)
+![EC2 Instances](./assets/ec2-instances.png)
 
 > 3 instances provisioned: `api-vm`, `caller-worker`, `inference-worker` — all passing health checks in `ap-south-1a`
 
 ### Terraform Apply — Successful
 
-![Terraform Apply](assets/terraform-apply.png)
+![Terraform Apply](./assets/terraform-apply.png)
 
 > Infrastructure deployed with outputs:
 > - `api_vm_public_ip = "52.66.197.75"`
@@ -64,7 +64,7 @@ This project deploys a distributed worker-based inference architecture on AWS us
 
 ### VPC & Network Configuration
 
-![VPC Setup](assets/vpc-setup.png)
+![VPC Setup](./assets/vpc-setup.png)
 
 > Custom VPC with 2 VPCs, 5 Subnets, 3 Route Tables, 2 Internet Gateways provisioned in Mumbai region
 
@@ -74,7 +74,7 @@ This project deploys a distributed worker-based inference architecture on AWS us
 
 ### End-to-End Inference Response
 
-![API Response](assets/api-response.png)
+![API Response](./assets/api-response.png)
 
 > PowerShell `Invoke-RestMethod` hitting `http://52.66.197.75:8000/infer` with `{"prompt":"hello"}` returns successful inference response through the full RPC chain
 
@@ -418,4 +418,4 @@ model = AutoModelForCausalLM.from_pretrained(
 **Maintainer:** Tanuj  
 **AWS Account:** 841031789151  
 **Region:** Asia Pacific — Mumbai (`ap-south-1`)  
-**Submission:** May 2026
+**Submission:** 21st May 2026
