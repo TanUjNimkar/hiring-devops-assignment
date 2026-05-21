@@ -5,6 +5,12 @@ data/
 *.tfstate
 *.tfstate.backup
 
+.terraform/
+*.tfstate
+*.tfstate.backup
+node_modules/
+venv/
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 *.py[codz]
