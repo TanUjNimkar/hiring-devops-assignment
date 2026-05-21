@@ -1,32 +1,226 @@
-# Alchemyst Hiring
+# DevOps Internship Assignment
 
-Welcome! This repo is the index of hiring drives we've run at Alchemyst. Each folder below is a self-contained drive with role descriptions and take-home assignments.
+## Overview
 
-**Baseline expectation across every drive:** exceptionally high agency, adaptability, and learnability.
+This project deploys a distributed worker-based inference architecture on AWS using Terraform.
 
-## Drives
+The deployment includes:
 
-### [May 2026](./may-2026/)
-Open positions for our 2026 hiring cycle. See the [drive overview](./may-2026/README.md) for the full pitch.
+- Public API Gateway VM
+- Internal caller-worker VM
+- Internal inference-worker VM
+- Internal worker communication over VPC networking
+- Public JSON API exposure
 
-| Role | Also known as | Assignment |
-| --- | --- | --- |
-| Cloud Cartographer | DevOps Intern / Infra Engineer | [DevOps Internship Assignment](./may-2026/devops/devops-internship-assignment.md) |
-| Realtime Whisperer | B2B Custom Agent Engineer | [Real-Time AI Chat over WebSockets](./may-2026/b2b-custom-agent-assignment.md) |
-| Agentic Architect | Fullstack AI Engineer | [Intelligent Resume Assistant (Agentic AI System)](./may-2026/fullstack-ai-assignment.md) |
+The infrastructure and deployment are fully reproducible using Terraform.
 
-### [June 2025](./june-2025/)
-See the [drive overview](./june-2025/README.md) for the full pitch.
+---
 
-| Role | Also known as | Assignment |
-| --- | --- | --- |
-| Infra Puppeteer | DevOps / Infra Engineer | [Infra Assignment](./june-2025/infra-assignment.md) |
-| Platform Jedi | Platform / Product / Data Engineer | [Platform Assignment](./june-2025/platform-assignment.md) |
-| Agentic Maverick | Agentic / Applied AI Engineer | [Agent Assignment](./june-2025/agent-assignment.md) |
-| Solutions Wizard | Solutions / Forward Deployed Engineer | [Solutions Assignment](./june-2025/solutions-assignment.md) |
+# Architecture
 
-## How to apply
+```text
+                     Internet
+                         |
+                         v
+                +----------------+
+                |   API Gateway  |
+                |   Public VM    |
+                | 52.66.197.75   |
+                +----------------+
+                         |
+               Internal VPC Traffic
+                         |
+                         v
+                +----------------+
+                | caller-worker  |
+                | Internal VM    |
+                | 10.0.1.101     |
+                +----------------+
+                         |
+                    Internal RPC
+                         |
+                         v
+                +-------------------+
+                | inference-worker  |
+                | Internal VM       |
+                | 10.0.1.136        |
+                +-------------------+
 
-Each assignment page includes its own submission instructions — typically a GitHub repo link emailed to the listed contacts, or a meeting booking link. Build what you can in the time given, then show it to us directly.
+Infrastructure
 
-> It's okay if you don't finish the entire assignment. We want to see the effort you put in. Skills are transferable; the go-getter attitude isn't.
+Provisioned using:
+
+    Terraform
+    AWS EC2
+    AWS VPC
+    Security Groups
+    Public and Internal Networking
+
+Infrastructure includes:
+
+    Custom VPC
+    Public subnet
+    Worker isolation
+    Security group configuration
+    SSH key provisioning
+    Multi-VM deployment
+
+Terraform Deployment
+
+Initialize Terraform:
+terraform init
+
+Validate configuration:
+terraform validate
+
+Deploy infrastructure:
+terraform apply
+
+API Usage
+Endpoint
+
+
+POST /infer
+Example Request
+
+PowerShell:
+Invoke-RestMethod `
+  -Uri "http://52.66.197.75:8000/infer" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"prompt":"hello"}'
+
+  Example Response
+
+JSON
+
+{
+  "prompt": "hello",
+  "response": "Inference pipeline connected successfully"
+}
+
+Worker Deployment
+caller-worker
+
+Runs on:
+
+text
+
+10.0.1.101
+
+Technology stack:
+
+    Node.js
+    TypeScript
+    iii-sdk
+
+inference-worker
+
+Runs on:
+
+text
+
+10.0.1.136
+
+Technology stack:
+
+    Python
+    Transformers
+    CPU-only PyTorch
+
+Security Design
+
+Implemented security measures:
+
+    Only API VM exposes public traffic
+    Worker communication restricted to internal VPC networking
+    SSH access restricted using security groups
+    Internal worker isolation
+    RPC communication over private IP addresses
+
+Deployment Scripts
+
+Automation scripts are available under:
+
+text
+
+scripts/
+
+Included scripts:
+
+    setup-api.sh
+    setup-caller.sh
+    setup-inference.sh
+
+These scripts automate dependency installation and environment setup.
+Production Improvements
+
+Before production deployment, I would additionally implement:
+
+    NAT Gateway for private worker outbound access
+    HTTPS and TLS termination
+    Application Load Balancer
+    Auto Scaling Groups
+    IAM least-privilege policies
+    CloudWatch logging and monitoring
+    CI/CD pipeline
+    Secret management using AWS Secrets Manager
+    Health checks and worker supervision
+    Containerization with Docker
+    Kubernetes/ECS deployment for orchestration
+
+Scaling Considerations
+
+If the model size increased significantly:
+
+    Use GPU-enabled EC2 instances
+    Use model sharding and distributed inference
+    Deploy using Kubernetes
+    Use optimized inference runtimes such as:
+        vLLM
+        Text Generation Inference (TGI)
+    Separate inference and orchestration layers
+    Add autoscaling and queue-based request handling
+
+Notes
+
+    CPU-only PyTorch wheels were used to avoid unnecessary CUDA dependencies.
+    Worker instances were provisioned with larger gp3 volumes due to dependency size requirements.
+    Internal communication between worker nodes was validated through VPC networking.
+    Infrastructure deployment and teardown are fully reproducible through Terraform.
+
+Repository Structure
+
+text
+
+infra/
+├── provider.tf
+├── network.tf
+├── security.tf
+├── compute.tf
+├── outputs.tf
+
+scripts/
+├── setup-api.sh
+├── setup-caller.sh
+├── setup-inference.sh
+
+Notes
+
+    CPU-only PyTorch wheels were used to reduce storage usage.
+    Worker instances were provisioned with larger gp3 volumes due to model dependency size.
+    Internal worker communication was validated through private VPC networking.
+
+text
+
+
+==================================================
+CREATE .gitignore
+==================================================
+
+```gitignore
+.terraform/
+*.tfstate
+*.tfstate.backup
+node_modules/
+venv/
