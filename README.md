@@ -1,198 +1,64 @@
-# DevOps Internship Assignment
-
-## Overview
+DevOps Internship Assignment
+Overview
 
 This project deploys a distributed worker-based inference architecture on AWS using Terraform.
 
 The deployment includes:
 
-- Public API Gateway VM
-- Internal caller-worker VM
-- Internal inference-worker VM
-- Internal worker communication over VPC networking
-- Public JSON API exposure
+Public API Gateway VM
+Internal caller-worker VM
+Internal inference-worker VM
+Private RPC communication over VPC networking
+Public JSON API exposure
 
-The infrastructure and deployment are fully reproducible using Terraform.
+Infrastructure provisioning and deployment are fully reproducible using Terraform.
 
----
-
-# Architecture
-
-```text
-                     Internet
-                         |
-                         v
-                +----------------+
-                |   API Gateway  |
-                |   Public VM    |
-                | 52.66.197.75   |
-                +----------------+
-                         |
-               Internal VPC Traffic
-                         |
-                         v
-                +----------------+
-                | caller-worker  |
-                | Internal VM    |
-                | 10.0.1.101     |
-                +----------------+
-                         |
-                    Internal RPC
-                         |
-                         v
-                +-------------------+
-                | inference-worker  |
-                | Internal VM       |
-                | 10.0.1.136        |
-                +-------------------+
-
+Architecture
+                 Internet
+                     |
+                     v
+            +----------------+
+            |   API Gateway  |
+            |   Public VM    |
+            | 52.66.197.75   |
+            +----------------+
+                     |
+             Internal VPC Traffic
+                     |
+                     v
+            +----------------+
+            | caller-worker  |
+            | Internal VM    |
+            | 10.0.1.101     |
+            +----------------+
+                     |
+                Internal RPC
+                     |
+                     v
+            +-------------------+
+            | inference-worker  |
+            | Internal VM       |
+            | 10.0.1.136        |
+            +-------------------+
 Infrastructure
 
 Provisioned using:
 
-    Terraform
-    AWS EC2
-    AWS VPC
-    Security Groups
-    Public and Internal Networking
+Terraform
+AWS EC2
+AWS VPC
+Security Groups
+Public & Private Networking
 
-Infrastructure includes:
+Infrastructure components:
 
-    Custom VPC
-    Public subnet
-    Worker isolation
-    Security group configuration
-    SSH key provisioning
-    Multi-VM deployment
-
-Terraform Deployment
-
-Initialize Terraform:
-terraform init
-
-Validate configuration:
-terraform validate
-
-Deploy infrastructure:
-terraform apply
-
-API Usage
-Endpoint
-
-
-POST /infer
-Example Request
-
-PowerShell:
-Invoke-RestMethod `
-  -Uri "http://52.66.197.75:8000/infer" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body '{"prompt":"hello"}'
-
-  Example Response
-
-JSON
-
-{
-  "prompt": "hello",
-  "response": "Inference pipeline connected successfully"
-}
-
-Worker Deployment
-caller-worker
-
-Runs on:
-
-text
-
-10.0.1.101
-
-Technology stack:
-
-    Node.js
-    TypeScript
-    iii-sdk
-
-inference-worker
-
-Runs on:
-
-text
-
-10.0.1.136
-
-Technology stack:
-
-    Python
-    Transformers
-    CPU-only PyTorch
-
-Security Design
-
-Implemented security measures:
-
-    Only API VM exposes public traffic
-    Worker communication restricted to internal VPC networking
-    SSH access restricted using security groups
-    Internal worker isolation
-    RPC communication over private IP addresses
-
-Deployment Scripts
-
-Automation scripts are available under:
-
-text
-
-scripts/
-
-Included scripts:
-
-    setup-api.sh
-    setup-caller.sh
-    setup-inference.sh
-
-These scripts automate dependency installation and environment setup.
-Production Improvements
-
-Before production deployment, I would additionally implement:
-
-    NAT Gateway for private worker outbound access
-    HTTPS and TLS termination
-    Application Load Balancer
-    Auto Scaling Groups
-    IAM least-privilege policies
-    CloudWatch logging and monitoring
-    CI/CD pipeline
-    Secret management using AWS Secrets Manager
-    Health checks and worker supervision
-    Containerization with Docker
-    Kubernetes/ECS deployment for orchestration
-
-Scaling Considerations
-
-If the model size increased significantly:
-
-    Use GPU-enabled EC2 instances
-    Use model sharding and distributed inference
-    Deploy using Kubernetes
-    Use optimized inference runtimes such as:
-        vLLM
-        Text Generation Inference (TGI)
-    Separate inference and orchestration layers
-    Add autoscaling and queue-based request handling
-
-Notes
-
-    CPU-only PyTorch wheels were used to avoid unnecessary CUDA dependencies.
-    Worker instances were provisioned with larger gp3 volumes due to dependency size requirements.
-    Internal communication between worker nodes was validated through VPC networking.
-    Infrastructure deployment and teardown are fully reproducible through Terraform.
-
+Custom VPC
+Public subnet
+Internal worker isolation
+Security groups
+SSH key provisioning
+Multi-VM deployment
 Repository Structure
-
-text
-
 infra/
 ├── provider.tf
 ├── network.tf
@@ -205,20 +71,121 @@ scripts/
 ├── setup-caller.sh
 ├── setup-inference.sh
 
+.gitignore
+README.md
+Deployment Instructions
+1. Clone Repository
+git clone <repo-url>
+cd <repo-name>
+2. Initialize Terraform
+cd infra
+terraform init
+3. Validate Configuration
+terraform validate
+4. Deploy Infrastructure
+terraform apply
+
+Type:
+
+yes
+
+Terraform will provision:
+
+VPC
+Subnet
+Security Groups
+EC2 Instances
+Networking configuration
+Worker Setup
+
+Run deployment scripts on corresponding VMs:
+
+bash scripts/setup-api.sh
+bash scripts/setup-caller.sh
+bash scripts/setup-inference.sh
+API Usage
+Endpoint
+POST /infer
+curl Command
+curl -X POST http://52.66.197.75:8000/infer \
+-H "Content-Type: application/json" \
+-d '{"prompt":"hello"}'
+Sample Response
+{
+  "prompt": "hello",
+  "response": "Inference pipeline connected successfully"
+}
+Worker Details
+caller-worker
+
+Private IP:
+
+10.0.1.101
+
+Stack:
+
+Node.js
+TypeScript
+iii-sdk
+inference-worker
+
+Private IP:
+
+10.0.1.136
+
+Stack:
+
+Python
+Transformers
+CPU-only PyTorch
+Security Design
+
+Implemented security measures:
+
+Only API VM is publicly accessible
+Workers are reachable only through private VPC networking
+SSH access restricted via security groups
+Internal RPC communication over private IPs
+Worker isolation enforced through networking rules
+Production Improvements
+
+Before production deployment, I would additionally implement:
+
+HTTPS/TLS termination
+NAT Gateway for private worker outbound access
+Application Load Balancer
+Auto Scaling Groups
+IAM least-privilege policies
+CloudWatch logging & monitoring
+CI/CD pipeline
+Secrets Manager integration
+Health checks & worker supervision
+Docker containerization
+ECS/Kubernetes orchestration
+Scaling Considerations
+
+If the model size increased significantly:
+
+Use GPU-enabled EC2 instances
+Deploy distributed inference architecture
+Use Kubernetes for orchestration
+Use optimized runtimes like:
+vLLM
+Text Generation Inference (TGI)
+Add autoscaling
+Introduce queue-based request handling
+Separate orchestration and inference layers
 Notes
+CPU-only PyTorch wheels were used to reduce unnecessary CUDA dependencies.
+Worker instances use larger gp3 volumes due to dependency and model size requirements.
+Internal worker communication was validated through private VPC networking.
+Infrastructure deployment and teardown are fully reproducible using Terraform.
+Cleanup
 
-    CPU-only PyTorch wheels were used to reduce storage usage.
-    Worker instances were provisioned with larger gp3 volumes due to model dependency size.
-    Internal worker communication was validated through private VPC networking.
+To destroy infrastructure:
 
-text
-
-
-==================================================
-CREATE .gitignore
-==================================================
-
-```gitignore
+terraform destroy
+.gitignore
 .terraform/
 *.tfstate
 *.tfstate.backup
